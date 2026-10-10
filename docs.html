@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Архив · Harlequin 128</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <h1 class="mast" style="font-size:clamp(26px,7.5vw,40px)">АРХИВ 128К</h1>
+  <div class="imprint"><span>Крышкин дом · техотдел</span><span>Harlequin 128 · USB → ZX</span></div>
+  <nav class="links"><a href="./">← зин</a></nav>
+</header>
+<main>
+  <div id="lock" class="zx"><div class="screen">
+    <div>128K ROM · © 1986 Sinclair Research Ltd</div><div>Крышкин дом · единица хранения № 128</div><br>
+    <div>LOAD "архив" <span class="cursor">&nbsp;</span></div>
+    <form id="gate" autocomplete="off"><input id="pw" type="password" placeholder="пароль" aria-label="Пароль" required><button>ENTER</button></form>
+    <div id="err" class="err"></div>
+  </div></div>
+  <div id="content" class="hidden">
+    <p>Схемы, прошивка и картинки к набору. Ничего из этого не обязательно — паяльник и плата никуда не торопятся.</p>
+    <div id="sections"></div>
+    <section class="sec"><h2>Люди и ссылки</h2>
+      <div class="file"><span class="nm"><a href="https://zxkit.com.ua/" rel="noopener">zxkit.com.ua</a></span><span class="ds">Продавец набора (ZX-KIT), Telegram @Terabiterr</span></div>
+      <div class="file"><span class="nm"><a href="https://t.me/kharkov_zxspectrum" rel="noopener">t.me/kharkov_zxspectrum</a></span><span class="ds">Харьковское сообщество ZX Spectrum — спросить, если что-то не заводится</span></div>
+      <div class="file"><span class="nm"><a href="https://zxkit.com.ua/products/template.html?id=ZX-003" rel="noopener">Harlequin 128 DIY KIT</a></span><span class="ds">Страница набора</span></div>
+      <div class="file"><span class="nm"><a href="https://zxkit.com.ua/products/template.html?id=ZX-008" rel="noopener">USB → ZX Spectrum (RP2040)</a></span><span class="ds">Страница конвертера</span></div>
+      <div class="file"><span class="nm"><a href="http://www.breakintoprogram.co.uk/" rel="noopener">breakintoprogram.co.uk</a></span><span class="ds">Блог, где оригинал статьи о сборке Harlequin</span></div>
+    </section>
+  </div>
+</main>
+<footer>Документация принадлежит её авторам и продавцу; здесь — копия для владельца набора.</footer>
+<script src="vault.js"></script>
+<script>
+"use strict";
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+const kb = n => n > 1e6 ? (n / 1e6).toFixed(1) + " МБ" : Math.max(1, Math.round(n / 1024)) + " КБ";
+let FILES = [];
+gate(async m => {
+  FILES = m.sections.flatMap(s => s.files);
+  document.getElementById("sections").innerHTML = m.sections.map(s => `<section class="sec"><h2>${esc(s.title)}</h2>${
+    s.files.map(f => { const i = FILES.indexOf(f); return `<div class="file"><span class="nm">${esc(f.name)} · ${kb(f.size)}</span>
+      <span class="ds">${esc(f.desc || "")}</span><button data-i="${i}">${f.mime.startsWith("image/") || f.mime === "application/pdf" ? "открыть" : "скачать"}</button>
+      ${f.text ? `<pre>${esc(f.text)}</pre>` : ""}</div>`; }).join("")}</section>`).join("");
+  document.getElementById("content").classList.remove("hidden");
+});
+document.addEventListener("click", async e => {
+  const b = e.target.closest("button[data-i]"); if (!b) return;
+  const f = FILES[+b.dataset.i], t = b.textContent; b.textContent = "…";
+  try {
+    if (f.mime.startsWith("image/") || f.mime === "application/pdf") { const w = window.open("", "_blank"); const u = await Vault.url(f); if (w) w.location = u; else location.href = u; }
+    else await Vault.download(f);
+  } finally { b.textContent = t; }
+});
+</script>
+</body>
+</html>
